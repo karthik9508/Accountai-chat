@@ -110,7 +110,7 @@ DB_PORT = os.getenv('DB_PORT', '5432')
 if DATABASE_URL:
     try:
         DATABASES = {
-            'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+            'default': dj_database_url.parse(DATABASE_URL, conn_max_age=0)
         }
     except dj_database_url.ParseError as exc:
         if DB_ENGINE:
