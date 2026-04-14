@@ -1,0 +1,71 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Create Invoice{% endblock %}
+
+{% block content %}
+<div class="header-row">
+    <h1>Create Invoice</h1>
+    <a href="{% url 'accounts:invoice_list' %}" class="button-link">Cancel</a>
+</div>
+
+<form method="post" class="card">
+    {% csrf_token %}
+    
+    <h3>Invoice Details</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+        {% for field in form %}
+            <div>
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                    <div class="form-error">{{ field.errors|join:", " }}</div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <h3>Line Items</h3>
+    {{ formset.management_form }}
+    <div id="invoice-items">
+        <table style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th style="width: 100px;">Quantity</th>
+                    <th style="width: 150px;">Unit Price</th>
+                    <th style="width: 60px;">Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item_form in formset %}
+                <tr>
+                    <td>{{ item_form.id }} {{ item_form.description }}</td>
+                    <td>{{ item_form.quantity }}</td>
+                    <td>{{ item_form.unit_price }}</td>
+                    <td style="text-align: center;">
+                        {% if formset.can_delete %}
+                            {{ item_form.DELETE }}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div style="margin-top: 2rem;">
+        <button type="submit" class="button">Save Invoice</button>
+    </div>
+</form>
+
+<style>
+    /* Basic overrides for Django formset tables */
+    input[type="text"], input[type="number"] {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        font-family: inherit;
+    }
+</style>
+{% endblock %}

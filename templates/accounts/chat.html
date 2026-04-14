@@ -1,0 +1,255 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Chat Workflow - ChatAccount{% endblock %}
+
+{% block content %}
+<style>
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 70vh;
+        max-height: 800px;
+        background: url('data:image/svg+xml;utf8,<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><circle cx="2" cy="2" r="1" fill="%23cbd5e1" fill-opacity="0.5"/></svg>');
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        box-shadow: 0 10px 40px rgba(15, 23, 42, 0.06);
+    }
+    .chat-header {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        padding: 16px 24px;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+        display: flex;
+        align-items: center;
+        z-index: 10;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+    }
+    .chat-header h1 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--text), var(--muted));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .chat-header p {
+        margin: 0 0 0 12px;
+        font-size: 0.9rem;
+        color: var(--muted);
+    }
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        scroll-behavior: smooth;
+    }
+    .chat-msg-wrapper {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        animation: slideUp 0.3s ease-out forwards;
+    }
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .chat-msg-wrapper.user {
+        align-items: flex-end;
+    }
+    .chat-msg-wrapper.assistant {
+        align-items: flex-start;
+    }
+    .chat-msg-bubble {
+        max-width: 75%;
+        padding: 14px 18px;
+        border-radius: 20px;
+        line-height: 1.5;
+        font-size: 0.95rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    }
+    .chat-msg-wrapper.user .chat-msg-bubble {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        border-bottom-right-radius: 4px;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    }
+    .chat-msg-wrapper.assistant .chat-msg-bubble {
+        background: #ffffff;
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-bottom-left-radius: 4px;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+    }
+    .chat-msg-header {
+        font-size: 0.75rem;
+        opacity: 0.7;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+    .chat-msg-wrapper.user .chat-msg-header {
+        color: rgba(255, 255, 255, 0.8);
+    }
+    .chat-msg-wrapper.assistant .chat-msg-header {
+        color: var(--muted);
+    }
+    .chat-input-area {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        padding: 16px 24px;
+        border-top: 1px solid var(--border);
+    }
+    .chat-input-form {
+        display: flex;
+        gap: 12px;
+        background: #f8fafc;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 6px 6px 6px 20px;
+        transition: all 0.2s ease;
+    }
+    .chat-input-form:focus-within {
+        border-color: #93c5fd;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        background: #ffffff;
+    }
+    .chat-input-form input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        padding: 0;
+        font-size: 1rem;
+        outline: none;
+    }
+    .chat-input-form button {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        border-radius: 999px;
+        padding: 10px 24px;
+        font-weight: 600;
+        transition: transform 0.1s ease, box-shadow 0.2s ease;
+    }
+    .chat-input-form button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+    
+    /* Transaction/Action Panels inside Chat Bubbles */
+    .action-panel {
+        margin-top: 16px;
+        padding: 14px;
+        background: #f8fafc;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        color: var(--text);
+    }
+    .action-panel pre {
+        background: #ffffff;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 0.85em;
+        overflow-x: auto;
+        border: 1px solid var(--border);
+        margin: 8px 0 16px;
+    }
+    .btn-confirm {
+        background: linear-gradient(135deg, #10b981, #059669);
+        width: 100%;
+        border-radius: 8px;
+        padding: 12px;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+    .btn-confirm:hover {
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 12px;
+        padding: 6px 14px;
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+        border-radius: 999px;
+        font-size: 0.85em;
+        font-weight: 700;
+    }
+</style>
+
+<div class="chat-container">
+    <div class="chat-header">
+        <h1>Co-Pilot</h1>
+        <p>Your AI Financial Assistant</p>
+    </div>
+
+    <div class="chat-messages" id="chatWindow">
+        {% if not messages_list %}
+            <div style="text-align: center; margin: auto; padding: 40px;">
+                <div style="font-size: 3rem; margin-bottom: 16px;">✨</div>
+                <h3 style="margin-bottom: 8px; color: var(--text);">How can I help you today?</h3>
+                <p style="color: var(--muted); font-size: 0.95rem; max-width: 300px; margin: 0 auto;">Try saying <em>"Spent $50 on lunch"</em>, <em>"How much did I make this month?"</em>, or <em>"Draft an invoice for Acme Corp for 500"</em>.</p>
+            </div>
+        {% endif %}
+        
+        {% for msg in messages_list %}
+            <div class="chat-msg-wrapper {{ msg.role }}">
+                <div class="chat-msg-bubble">
+                    <div class="chat-msg-header">
+                        {% if msg.role == 'assistant' %}✨ Co-Pilot{% else %}You{% endif %} • {{ msg.created_at|date:"h:i A" }}
+                    </div>
+                    <div class="chat-msg-body">{{ msg.message_text|linebreaksbr }}</div>
+
+                    {% if msg.role == 'assistant' and msg.processing_status == 'pending' and msg.parsed_payload %}
+                        <div class="action-panel">
+                            <div style="font-size: 0.85em; font-weight: 600; color: var(--muted); text-transform: uppercase;">Transaction Details</div>
+                            <pre>{{ msg.parsed_payload|pprint }}</pre>
+                            
+                            <form method="POST" action="{% url 'accounts:confirm_transaction' msg.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="button btn-confirm">Save Transaction</button>
+                            </form>
+                        </div>
+                    {% elif msg.role == 'assistant' and msg.processing_status == 'confirmed' %}
+                        {% if msg.parsed_payload and msg.parsed_payload.invoice_id %}
+                            <div style="margin-top: 16px;">
+                                <a href="{% url 'accounts:invoice_detail' msg.parsed_payload.invoice_id %}" class="button" style="background: var(--text); color: white; border-radius: 8px; width: 100%; text-align: center; display: block; font-weight: 600;">View Invoice PDF 📄</a>
+                            </div>
+                        {% else %}
+                            <div class="status-badge">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Completed
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="chat-input-area">
+        <form method="POST" action="{% url 'accounts:chat' %}" class="chat-input-form" onsubmit="document.getElementById('sendBtn').disabled = true;">
+            {% csrf_token %}
+            <input type="text" name="message" placeholder="Message Co-Pilot..." required autocomplete="off" autofocus>
+            <button type="submit" id="sendBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display: block; margin: -2px 0;"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Automatically scroll to the bottom of the chat window on load
+    const chatWindow = document.getElementById('chatWindow');
+    if (chatWindow) {
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Categories{% endblock %}
+
+{% block content %}
+    <div class="header-row">
+        <div>
+            <h1>Categories</h1>
+            <p>Manage income and expense categories for {{ business.name }}.</p>
+        </div>
+    </div>
+
+    <div class="split">
+        <div class="form-shell">
+            <h2>Add category</h2>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Save category</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Overview</h2>
+            <ul class="list-clean">
+                {% for item in grouped_counts %}
+                    <li class="card">
+                        <strong>{{ item.kind|title }}</strong>
+                        <div class="muted">{{ item.total }} categories</div>
+                    </li>
+                {% empty %}
+                    <li class="muted">No categories available yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top: 20px;">
+        <h2>All categories</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Source</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                        <tr>
+                            <td>{{ category.name }}</td>
+                            <td>{{ category.get_kind_display }}</td>
+                            <td>{% if category.is_system_default %}Starter{% else %}Custom{% endif %}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3" class="muted">No categories yet.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

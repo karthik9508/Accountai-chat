@@ -1,0 +1,45 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Invoices{% endblock %}
+
+{% block content %}
+<div class="header-row">
+    <h1>Invoices</h1>
+    <a href="{% url 'accounts:invoice_create' %}" class="button">Create Invoice</a>
+</div>
+
+{% if invoices %}
+    <table>
+        <thead>
+            <tr>
+                <th>Invoice #</th>
+                <th>Customer</th>
+                <th>Status</th>
+                <th>Issue Date</th>
+                <th>Due Date</th>
+                <th style="text-align: right;">Total</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invoice in invoices %}
+            <tr>
+                <td>{{ invoice.invoice_number }}</td>
+                <td>{{ invoice.customer.name }}</td>
+                <td>
+                    <span class="badge badge-{{ invoice.status }}">{{ invoice.get_status_display }}</span>
+                </td>
+                <td>{{ invoice.issue_date }}</td>
+                <td>{{ invoice.due_date }}</td>
+                <td style="text-align: right;">{{ invoice.total_amount }} {{ invoice.currency }}</td>
+                <td>
+                    <a href="{% url 'accounts:invoice_detail' invoice.id %}">View</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No invoices found. Create one to get started.</p>
+{% endif %}
+{% endblock %}

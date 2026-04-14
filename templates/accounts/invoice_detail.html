@@ -1,0 +1,112 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Invoice #{{ invoice.invoice_number }}{% endblock %}
+
+{% block content %}
+<div class="header-row">
+    <div>
+        <h1>Invoice #{{ invoice.invoice_number }}</h1>
+        <p>Status: <span class="badge badge-{{ invoice.status }}">{{ invoice.get_status_display }}</span></p>
+    </div>
+    
+    <div style="display: flex; gap: 1rem;">
+        <button onclick="window.print()" class="button" style="background-color: var(--secondary); color: var(--text);">Print PDF</button>
+        {% if invoice.status != 'paid' %}
+        <form method="post" action="{% url 'accounts:invoice_mark_paid' invoice.id %}">
+            {% csrf_token %}
+            <button type="submit" class="button">Mark as Paid</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card" style="margin-top: 2rem;">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 3rem;">
+        <div>
+            <h2 style="margin: 0; color: var(--muted); text-transform: uppercase; font-size: 0.9rem;">From</h2>
+            <p style="margin-top: 0.5rem; font-weight: 500; font-size: 1.1rem;">{{ business.name }}</p>
+            {% if business.address %}<p style="margin: 0.2rem 0; white-space: pre-wrap; font-size: 0.9rem; color: var(--muted);">{{ business.address }}</p>{% endif %}
+            {% if business.contact_number %}<p style="margin: 0.2rem 0; font-size: 0.9rem; color: var(--muted);">{{ business.contact_number }}</p>{% endif %}
+            {% if business.owner_email %}<p style="margin: 0.2rem 0; font-size: 0.9rem; color: var(--muted);">{{ business.owner_email }}</p>{% endif %}
+            {% if business.tax_id %}<p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; color: var(--muted);"><strong>Tax ID:</strong> {{ business.tax_id }}</p>{% endif %}
+        </div>
+        <div style="text-align: right;">
+            <h2 style="margin: 0; color: var(--text-light); text-transform: uppercase; font-size: 0.9rem;">Bill To</h2>
+            <p style="margin-top: 0.5rem; font-weight: 500;">{{ invoice.customer.name }}</p>
+            {% if invoice.customer.email %}<p style="margin: 0;">{{ invoice.customer.email }}</p>{% endif %}
+        </div>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem; padding: 1rem; background-color: var(--background); border-radius: var(--radius-md);">
+        <div>
+            <span style="display: block; color: var(--text-light); font-size: 0.8rem; text-transform: uppercase;">Issue Date</span>
+            <strong>{{ invoice.issue_date }}</strong>
+        </div>
+        <div style="text-align: right;">
+            <span style="display: block; color: var(--text-light); font-size: 0.8rem; text-transform: uppercase;">Due Date</span>
+            <strong>{{ invoice.due_date }}</strong>
+        </div>
+    </div>
+
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 2rem;">
+        <thead>
+            <tr style="border-bottom: 1px solid var(--border-color);">
+                <th style="padding-bottom: 0.5rem; text-align: left;">Item</th>
+                <th style="padding-bottom: 0.5rem; text-align: right;">Qty</th>
+                <th style="padding-bottom: 0.5rem; text-align: right;">Price</th>
+                <th style="padding-bottom: 0.5rem; text-align: right;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 1rem 0;">{{ item.description }}</td>
+                <td style="padding: 1rem 0; text-align: right;">{{ item.quantity }}</td>
+                <td style="padding: 1rem 0; text-align: right;">{{ item.unit_price }}</td>
+                <td style="padding: 1rem 0; text-align: right;">{{ item.total }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div style="width: 300px; margin-left: auto;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+            <span>Subtotal:</span>
+            <span>{{ invoice.subtotal }} {{ invoice.currency }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+            <span>Tax:</span>
+            <span>{{ invoice.tax_amount }} {{ invoice.currency }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: bold; border-top: 2px solid var(--border-color); padding-top: 1rem;">
+            <span>Total:</span>
+            <span>{{ invoice.total_amount }} {{ invoice.currency }}</span>
+        </div>
+    </div>
+    
+    {% if invoice.notes %}
+    <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+        <h4 style="margin-top: 0;">Notes</h4>
+        <p style="white-space: pre-wrap;">{{ invoice.notes }}</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Print Styles -->
+<style>
+    @media print {
+        header, .sidebar, .header-row button, form {
+            display: none !important;
+        }
+        main.main-content {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .card {
+            box-shadow: none !important;
+            border: none !important;
+            padding: 0 !important;
+        }
+    }
+</style>
+{% endblock %}

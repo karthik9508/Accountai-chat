@@ -1,0 +1,21 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Add Transaction{% endblock %}
+
+{% block content %}
+    <div class="header-row">
+        <div>
+            <h1>Add Transaction</h1>
+            <p>Create a new income or expense entry for {{ business.name }}.</p>
+        </div>
+        <a class="button-link" href="{% url 'accounts:transactions' %}">Back to transactions</a>
+    </div>
+
+    <div class="form-shell">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Save transaction</button>
+        </form>
+    </div>
+{% endblock %}

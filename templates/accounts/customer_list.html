@@ -1,0 +1,38 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Customers{% endblock %}
+
+{% block content %}
+    <div class="header-row">
+        <div>
+            <h1>Customers</h1>
+            <p>Keep invoice recipients and counterparties organized.</p>
+        </div>
+    </div>
+
+    <div class="split">
+        <div class="form-shell">
+            <h2>Add customer</h2>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Save customer</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Customer list</h2>
+            <ul class="list-clean">
+                {% for customer in customers %}
+                    <li class="card">
+                        <strong>{{ customer.name }}</strong>
+                        <div class="muted">{{ customer.email|default:'No email' }}</div>
+                        <div class="muted">{{ customer.phone|default:'No phone' }}</div>
+                    </li>
+                {% empty %}
+                    <li class="muted">No customers yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endblock %}

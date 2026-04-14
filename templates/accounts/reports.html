@@ -1,0 +1,53 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+<div class="header-row">
+    <h1>Financial Reports</h1>
+</div>
+
+<div class="card" style="margin-bottom: 2rem;">
+    <h2>Financial Snapshot & Summary</h2>
+    <div class="card-grid">
+        <div class="card">
+            <p>Total Revenue (Income)</p>
+            <div class="stat-value" style="color: var(--success-text)">+{{ summary.income_total }} {{ business.base_currency }}</div>
+        </div>
+        <div class="card">
+            <p>Total Expenses</p>
+            <div class="stat-value" style="color: var(--error-text)">-{{ summary.expense_total }} {{ business.base_currency }}</div>
+        </div>
+        <div class="card" style="background: var(--accent-soft);">
+            <p>Net Profit</p>
+            <div class="stat-value" style="color: var(--accent)">
+                {{ summary.net_total }} {{ business.base_currency }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Expense Breakdown by Category</h2>
+    {% if category_breakdown %}
+        <table style="width: 100%; border-collapse: collapse; margin-top: 1.5rem;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border-color);">
+                    <th style="padding-bottom: 0.5rem; text-align: left;">Category</th>
+                    <th style="padding-bottom: 0.5rem; text-align: right;">Total Spent</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in category_breakdown %}
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 1rem 0;">{{ row.category__name|default:"Uncategorized" }}</td>
+                    <td style="padding: 1rem 0; text-align: right; color: var(--error-text);">{{ row.total }} {{ business.base_currency }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p style="margin-top: 1rem;">No expenses recorded yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+    <div class="header-row">
+        <div>
+            <h1>Your Profile</h1>
+            <p>You are signed in as <strong>{{ user_email }}</strong>.</p>
+            <p>Business workspace: <strong>{{ business.name }}</strong></p>
+        </div>
+        <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button type="submit">Sign out</button>
+        </form>
+    </div>
+
+    <div class="card-grid">
+        <div class="card">
+            <p>Transactions</p>
+            <div class="stat-value">{{ summary.total_transactions }}</div>
+        </div>
+        <div class="card">
+            <p>Categories</p>
+            <div class="stat-value">{{ category_count }}</div>
+        </div>
+        <div class="card">
+            <p>Customers</p>
+            <div class="stat-value">{{ customer_count }}</div>
+        </div>
+        <div class="card">
+            <p>Invoices</p>
+            <div class="stat-value">{{ invoice_count }}</div>
+        </div>
+    </div>
+
+    <div class="inline-actions">
+        <a class="button-link" href="{% url 'accounts:transactions' %}">View transactions</a>
+        <a class="button-link" href="{% url 'accounts:transaction_create' %}">Add transaction</a>
+        <a class="button-link" href="{% url 'accounts:categories' %}">Manage categories</a>
+        <a class="button-link" href="{% url 'accounts:customers' %}">Manage customers</a>
+    </div>
+
+    <div class="card">
+        <h2>Financial snapshot</h2>
+        <div class="card-grid">
+            <div class="card">
+                <p>Income</p>
+                <div class="stat-value">{{ summary.income_total }} {{ business.base_currency }}</div>
+            </div>
+            <div class="card">
+                <p>Expenses</p>
+                <div class="stat-value">{{ summary.expense_total }} {{ business.base_currency }}</div>
+            </div>
+            <div class="card">
+                <p>Net</p>
+                <div class="stat-value">{{ summary.net_total }} {{ business.base_currency }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top: 24px;">
+        <h2>Business Settings</h2>
+        <p>Update your business details so they appear correctly on your invoices.</p>
+        <div class="form-shell" style="max-width: 600px; margin-top: 16px;">
+            <form method="post" action="{% url 'accounts:profile' %}">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                
+                <div class="split">
+                    <div>
+                        <label for="{{ form.name.id_for_label }}">Business Name</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}<div class="errorlist">{{ form.name.errors }}</div>{% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.tax_id.id_for_label }}">Tax ID (Optional)</label>
+                        {{ form.tax_id }}
+                        {% if form.tax_id.errors %}<div class="errorlist">{{ form.tax_id.errors }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div>
+                    <label for="{{ form.contact_number.id_for_label }}">Contact Number (Optional)</label>
+                    {{ form.contact_number }}
+                    {% if form.contact_number.errors %}<div class="errorlist">{{ form.contact_number.errors }}</div>{% endif %}
+                </div>
+
+                <div>
+                    <label for="{{ form.address.id_for_label }}">Billing Address</label>
+                    {{ form.address }}
+                    {% if form.address.errors %}<div class="errorlist">{{ form.address.errors }}</div>{% endif %}
+                </div>
+                
+                <div class="split">
+                    <div>
+                        <label for="{{ form.base_currency.id_for_label }}">Base Currency</label>
+                        {{ form.base_currency }}
+                    </div>
+                    <div>
+                        <label for="{{ form.timezone.id_for_label }}">Timezone</label>
+                        {{ form.timezone }}
+                    </div>
+                </div>
+
+                <div style="margin-top: 12px;">
+                    <button type="submit" class="button">Save Settings</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

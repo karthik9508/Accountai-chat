@@ -1,0 +1,6 @@
+Django>=4.2,<5.0
+dj-database-url
+supabase
+python-dotenv
+psycopg[binary]
+google-genai
