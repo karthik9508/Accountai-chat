@@ -44,6 +44,13 @@ DEBUG = env_flag('DJANGO_DEBUG', default=True)
 
 ALLOWED_HOSTS = [host.strip() for host in os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',') if host.strip()]
 
+# Allow CSRF for all allowed hosts (except '*' if present)
+CSRF_TRUSTED_ORIGINS = [
+    f"https://{host.strip()}" 
+    for host in os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',') 
+    if host.strip() and host.strip() != '*'
+]
+
 
 # Application definition
 
@@ -59,6 +66,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
