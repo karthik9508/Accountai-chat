@@ -1,0 +1,5 @@
+[build]
+builder = "RAILPACK"
+
+[deploy]
+startCommand = "python manage.py migrate && gunicorn chataccount.wsgi:application --bind 0.0.0.0:$PORT"
