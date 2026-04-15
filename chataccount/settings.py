@@ -42,13 +42,25 @@ SECRET_KEY = os.getenv(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env_flag('DJANGO_DEBUG', default=True)
 
-ALLOWED_HOSTS = [host.strip() for host in os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',') if host.strip()]
+# Build ALLOWED_HOSTS from env var, plus auto-detect Railway hostnames
+_allowed_hosts_raw = [host.strip() for host in os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',') if host.strip()]
 
-# Allow CSRF for all allowed hosts (except '*' if present)
+# Automatically pick up Railway-injected public domain (no manual config needed)
+_railway_domain = os.getenv('RAILWAY_PUBLIC_DOMAIN', '')
+if _railway_domain and _railway_domain not in _allowed_hosts_raw:
+    _allowed_hosts_raw.append(_railway_domain)
+
+# In debug mode with no hosts set, allow all (local dev convenience)
+if not _allowed_hosts_raw and DEBUG:
+    _allowed_hosts_raw = ['*']
+
+ALLOWED_HOSTS = _allowed_hosts_raw
+
+# Allow CSRF for all allowed https hosts
 CSRF_TRUSTED_ORIGINS = [
-    f"https://{host.strip()}" 
-    for host in os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',') 
-    if host.strip() and host.strip() != '*'
+    f"https://{host}" 
+    for host in ALLOWED_HOSTS
+    if host != '*'
 ]
 
 
@@ -193,6 +205,16 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# WhiteNoise: serve compressed static files in production
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
